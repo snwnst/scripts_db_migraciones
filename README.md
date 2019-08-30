@@ -11,11 +11,12 @@
 ```
 	cd miRuta/miRepo
 ```
-2. Ejecutar:
+2. Configurar las cadenas de coneccion dentro de mysql_to_sqls_no_fk.py
+3. Ejecutar:
 ```
 	pip install -r mysql_to_sqls_no_fk.txt
 ```
-3. Ejecutar:
+4. Ejecutar:
 ```
 	python mysql_to_sqls_no_fk.py
 ```
