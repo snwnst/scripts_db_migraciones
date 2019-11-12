@@ -69,5 +69,5 @@ tablenames = mysql.fetchall()
 array_table_names = []
 
 for tablename in tablenames:
-    create_table(tablename[0])
+    #create_table(tablename[0])
     insert_data(tablename[0])
