@@ -1,4 +1,4 @@
 tqdm
 mysql.connector
-pyodbc
 datetime
+psycopg2

@@ -1,25 +1,11 @@
+
 from tqdm import tqdm
 import mysql.connector
-import pyodbc 
+import psycopg2
 import datetime
 
-scheme = ''
-
-mysqlconnection = mysql.connector.connect(host='',database='',user='',password='')
-mysql = mysqlconnection.cursor()
-
-msqlsconnection = pyodbc.connect("DRIVER={ODBC Driver 17 for SQL Server};SERVER=;DATABASE=;UID=;PWD=")
-msqls = msqlsconnection.cursor() 
-
-mysql.execute("SELECT TABLE_NAME FROM information_schema.tables WHERE table_schema='{}'".format(scheme))
-tablenames = mysql.fetchall()
-
-array_table_names = []
-for tablename in tablenames:
-    create_table(tablename[0])
-
 def create_table(table_name):
-    cratetablestr = 'CREATE TABLE {}.{} ('.format(scheme,table_name)
+    cratetablestr = 'CREATE TABLE {} ('.format(table_name)
     mysql.execute("DESCRIBE {}.{}".format(scheme,table_name))
     columnsinfo = mysql.fetchall()
     constranint = ''
@@ -27,7 +13,10 @@ def create_table(table_name):
         if 'int' in str(columinfo[1]):
             cratetablestr = '{} {} INT {},'.format(cratetablestr,columinfo[0],columinfo[2])
         else:
-            cratetablestr = '{} {} {} {},' .format(cratetablestr,columinfo[0],columinfo[1].upper(),columinfo[2])   
+            if 'datetime' in str(columinfo[1]):
+                cratetablestr = '{} {} timestamp {},'.format(cratetablestr,columinfo[0],columinfo[2])
+            else:
+                cratetablestr = '{} {} {} {},' .format(cratetablestr,columinfo[0],columinfo[1].upper(),columinfo[2])   
         if 'PRI' in str(columinfo[3]):
             constranint =  '{} {},'.format(constranint,str(columinfo[0]))
     if constranint != '':
@@ -42,12 +31,11 @@ def create_table(table_name):
     cratetablestr = '{});'.format(cratetablestr)
     msqls.execute(cratetablestr)
     msqlsconnection.commit()
-    insert_data(table_name)
 
 def insert_data(table_name):
     mysql.execute("DESCRIBE {}.{}".format(scheme,table_name))
     columnames = mysql.fetchall()
-    query = 'INSERT INTO {}.{} ('.format(scheme,table_name)
+    query = 'INSERT INTO {} ('.format(table_name)
     for columname in columnames:
         query = query+columname[0]+','
     query = query+')'
@@ -65,4 +53,21 @@ def insert_data(table_name):
         msqls.execute(query+" VALUES "+str(row).replace("None", "NULL"))
         msqlsconnection.commit()
         persent_rows_table.set_description("MIGRANDO %s" % table_name)
-        
+
+newscheme = 'dbo'
+scheme = 'terracota'
+
+mysqlconnection = mysql.connector.connect(host='46.105.122.133',database='terracota',user='nmartinez',password='Terra2019')
+mysql = mysqlconnection.cursor()
+
+msqlsconnection = psycopg2.connect("host=167.172.216.50 dbname=TERRASAM user=root password=@H1lcotadmin")
+msqls = msqlsconnection.cursor() 
+
+mysql.execute("SELECT TABLE_NAME FROM information_schema.tables WHERE table_schema='{}'".format(scheme))
+tablenames = mysql.fetchall()
+
+array_table_names = []
+
+for tablename in tablenames:
+    create_table(tablename[0])
+    insert_data(tablename[0])
